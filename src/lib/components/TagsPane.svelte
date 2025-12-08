@@ -87,7 +87,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid #3c3c3c;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .pane-header h3 {
@@ -95,13 +95,13 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #808080;
+    color: var(--text-muted);
   }
 
   .count {
     font-size: 0.75rem;
-    color: #808080;
-    background: #3c3c3c;
+    color: var(--text-muted);
+    background: var(--border-color);
     padding: 0.1rem 0.4rem;
     border-radius: 10px;
   }
@@ -119,7 +119,7 @@
     padding: 0.35rem 0.75rem;
     background: transparent;
     border: none;
-    color: #4ec9b0;
+    color: var(--tag-text);
     cursor: pointer;
     text-align: left;
     gap: 0.25rem;
@@ -127,15 +127,15 @@
   }
 
   .tag-item:hover {
-    background: #2a2d2e;
+    background: var(--bg-tertiary);
   }
 
   .tag-item.selected {
-    background: #37373d;
+    background: var(--bg-tertiary);
   }
 
   .tag-icon {
-    color: #808080;
+    color: var(--text-muted);
   }
 
   .tag-name {
@@ -146,13 +146,13 @@
 
   .empty-message {
     padding: 1rem;
-    color: #808080;
+    color: var(--text-muted);
     font-size: 0.85rem;
     text-align: center;
   }
 
   .tag-notes {
-    border-top: 1px solid #3c3c3c;
+    border-top: 1px solid var(--border-color);
     max-height: 200px;
     overflow-y: auto;
   }
@@ -160,8 +160,8 @@
   .tag-notes-header {
     padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
-    color: #808080;
-    background: #2d2d2d;
+    color: var(--text-muted);
+    background: var(--bg-tertiary);
   }
 
   .note-link {
@@ -170,19 +170,19 @@
     padding: 0.35rem 0.75rem;
     background: transparent;
     border: none;
-    color: #569cd6;
+    color: var(--link-color);
     cursor: pointer;
     text-align: left;
     font-size: 0.85rem;
   }
 
   .note-link:hover {
-    background: #2a2d2e;
+    background: var(--bg-tertiary);
   }
 
   .loading {
     padding: 0.5rem 0.75rem;
-    color: #808080;
+    color: var(--text-muted);
     font-size: 0.85rem;
   }
 </style>

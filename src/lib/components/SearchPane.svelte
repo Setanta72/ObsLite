@@ -103,26 +103,26 @@
 
   .search-input-container {
     padding: 0.5rem;
-    border-bottom: 1px solid #3c3c3c;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .search-input-container input {
     width: 100%;
     padding: 0.4rem 0.6rem;
-    background: #3c3c3c;
-    border: 1px solid #3c3c3c;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    color: #cccccc;
+    color: var(--text-primary);
     font-size: 0.85rem;
   }
 
   .search-input-container input:focus {
     outline: none;
-    border-color: #569cd6;
+    border-color: var(--accent-color);
   }
 
   .search-input-container input::placeholder {
-    color: #808080;
+    color: var(--text-muted);
   }
 
   .search-results {
@@ -133,22 +133,22 @@
   .loading,
   .empty-message {
     padding: 1rem;
-    color: #808080;
+    color: var(--text-muted);
     font-size: 0.85rem;
     text-align: center;
   }
 
   .result-item {
-    border-bottom: 1px solid #3c3c3c;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .result-file {
     display: block;
     width: 100%;
     padding: 0.5rem 0.75rem;
-    background: #2d2d2d;
+    background: var(--bg-tertiary);
     border: none;
-    color: #569cd6;
+    color: var(--link-color);
     cursor: pointer;
     text-align: left;
     font-size: 0.85rem;
@@ -156,7 +156,7 @@
   }
 
   .result-file:hover {
-    background: #37373d;
+    background: var(--bg-secondary);
   }
 
   .result-matches {
@@ -172,13 +172,13 @@
   }
 
   .line-number {
-    color: #808080;
+    color: var(--text-muted);
     min-width: 24px;
     text-align: right;
   }
 
   .line-content {
-    color: #cccccc;
+    color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -192,7 +192,7 @@
   }
 
   .more-matches {
-    color: #808080;
+    color: var(--text-muted);
     font-size: 0.75rem;
     padding: 0.25rem 0;
   }

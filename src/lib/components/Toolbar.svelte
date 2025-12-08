@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { currentNote, isEditing, isDirty } from '$lib/stores/app';
+  import { spellcheckEnabled } from '$lib/spellcheck';
 
   const dispatch = createEventDispatcher<{
     save: void;
@@ -11,6 +12,10 @@
 
   function insertFormat(type: string) {
     dispatch('format', { type });
+  }
+
+  function toggleSpellcheck() {
+    $spellcheckEnabled = !$spellcheckEnabled;
   }
 </script>
 
@@ -50,6 +55,14 @@
 
   <div class="toolbar-right">
     <button
+      class="spellcheck-btn"
+      class:active={$spellcheckEnabled}
+      on:click={toggleSpellcheck}
+      title="Toggle Spellcheck"
+    >
+      {$spellcheckEnabled ? 'ABC' : 'ABC'}
+    </button>
+    <button
       class="mode-btn"
       class:active={$isEditing}
       on:click={() => dispatch('toggleEdit')}
@@ -72,8 +85,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.5rem 1rem;
-    background: #2d2d2d;
-    border-bottom: 1px solid #3c3c3c;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
     gap: 1rem;
   }
 
@@ -86,14 +99,14 @@
 
   .note-title {
     font-weight: 500;
-    color: #cccccc;
+    color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .dirty-indicator {
-    color: #569cd6;
+    color: var(--accent-color);
     font-size: 0.8rem;
   }
 
@@ -109,21 +122,21 @@
     background: transparent;
     border: 1px solid transparent;
     border-radius: 3px;
-    color: #cccccc;
+    color: var(--text-primary);
     cursor: pointer;
     font-size: 0.85rem;
     min-width: 28px;
   }
 
   .format-btn:hover {
-    background: #3c3c3c;
-    border-color: #4c4c4c;
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
   }
 
   .separator {
     width: 1px;
     height: 20px;
-    background: #3c3c3c;
+    background: var(--border-color);
     margin: 0 0.25rem;
   }
 
@@ -135,16 +148,16 @@
 
   .mode-btn {
     padding: 0.35rem 0.75rem;
-    background: #3c3c3c;
+    background: var(--bg-secondary);
     border: none;
     border-radius: 4px;
-    color: #cccccc;
+    color: var(--text-primary);
     cursor: pointer;
     font-size: 0.85rem;
   }
 
   .mode-btn:hover {
-    background: #4c4c4c;
+    background: var(--border-color);
   }
 
   .action-btn {
@@ -156,21 +169,43 @@
   }
 
   .action-btn.save {
-    background: #569cd6;
+    background: var(--accent-color);
     color: white;
   }
 
   .action-btn.save:hover {
-    background: #4a8ac7;
+    background: var(--accent-hover);
   }
 
   .action-btn.delete {
     background: transparent;
-    color: #808080;
+    color: var(--text-muted);
   }
 
   .action-btn.delete:hover {
-    background: #5a1d1d;
-    color: #f48771;
+    background: var(--danger-bg);
+    color: var(--danger-color);
+  }
+
+  .spellcheck-btn {
+    padding: 0.35rem 0.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: line-through;
+  }
+
+  .spellcheck-btn.active {
+    color: var(--accent-color);
+    text-decoration: none;
+    border-color: var(--accent-color);
+  }
+
+  .spellcheck-btn:hover {
+    background: var(--bg-tertiary);
   }
 </style>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { marked } from 'marked';
+  import { openUrl } from '@tauri-apps/plugin-opener';
 
   export let content: string;
 
@@ -40,13 +41,44 @@
   $: processedContent = processTags(processWikiLinks(content));
   $: htmlContent = marked(processedContent, { renderer, breaks: true });
 
-  function handleClick(e: MouseEvent) {
+  async function handleClick(e: MouseEvent) {
     const target = e.target as HTMLElement;
+
+    // Handle wiki-links
     if (target.classList.contains('wiki-link')) {
       e.preventDefault();
       const link = target.dataset.link;
       if (link) {
         dispatch('linkClick', link);
+      }
+      return;
+    }
+
+    // Handle all anchor tags
+    if (target.tagName === 'A') {
+      const href = target.getAttribute('href');
+      if (href) {
+        e.preventDefault();
+
+        // External URLs - open in system browser
+        if (href.startsWith('http://') || href.startsWith('https://')) {
+          try {
+            await openUrl(href);
+          } catch (err) {
+            console.error('Failed to open URL:', err);
+          }
+          return;
+        }
+
+        // Email links
+        if (href.startsWith('mailto:')) {
+          try {
+            await openUrl(href);
+          } catch (err) {
+            console.error('Failed to open email:', err);
+          }
+          return;
+        }
       }
     }
   }
@@ -61,8 +93,8 @@
     flex: 1;
     overflow-y: auto;
     padding: 1.5rem 2rem;
-    background: #1e1e1e;
-    color: #d4d4d4;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     line-height: 1.6;
   }
 
@@ -72,7 +104,7 @@
   .preview :global(h4),
   .preview :global(h5),
   .preview :global(h6) {
-    color: #ffffff;
+    color: var(--text-primary);
     margin-top: 1.5rem;
     margin-bottom: 0.75rem;
     font-weight: 600;
@@ -80,13 +112,13 @@
 
   .preview :global(h1) {
     font-size: 2rem;
-    border-bottom: 1px solid #3c3c3c;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 0.5rem;
   }
 
   .preview :global(h2) {
     font-size: 1.5rem;
-    border-bottom: 1px solid #3c3c3c;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 0.3rem;
   }
 
@@ -99,7 +131,7 @@
   }
 
   .preview :global(a) {
-    color: #569cd6;
+    color: var(--link-color);
     text-decoration: none;
   }
 
@@ -108,7 +140,7 @@
   }
 
   .preview :global(.wiki-link) {
-    color: #569cd6;
+    color: var(--link-color);
     background: rgba(86, 156, 214, 0.1);
     padding: 0.1rem 0.3rem;
     border-radius: 3px;
@@ -120,8 +152,8 @@
   }
 
   .preview :global(.tag) {
-    color: #4ec9b0;
-    background: rgba(78, 201, 176, 0.1);
+    color: var(--tag-text);
+    background: var(--tag-bg);
     padding: 0.1rem 0.4rem;
     border-radius: 3px;
     font-size: 0.9em;
@@ -129,14 +161,14 @@
 
   .preview :global(code) {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    background: #2d2d2d;
+    background: var(--code-bg);
     padding: 0.2rem 0.4rem;
     border-radius: 3px;
     font-size: 0.9em;
   }
 
   .preview :global(pre) {
-    background: #2d2d2d;
+    background: var(--code-bg);
     padding: 1rem;
     border-radius: 6px;
     overflow-x: auto;
@@ -168,16 +200,16 @@
   }
 
   .preview :global(blockquote) {
-    border-left: 3px solid #569cd6;
+    border-left: 3px solid var(--accent-color);
     padding-left: 1rem;
     margin-left: 0;
-    color: #9cdcfe;
+    color: var(--text-secondary);
     font-style: italic;
   }
 
   .preview :global(hr) {
     border: none;
-    border-top: 1px solid #3c3c3c;
+    border-top: 1px solid var(--border-color);
     margin: 1.5rem 0;
   }
 
@@ -189,13 +221,13 @@
 
   .preview :global(th),
   .preview :global(td) {
-    border: 1px solid #3c3c3c;
+    border: 1px solid var(--border-color);
     padding: 0.5rem;
     text-align: left;
   }
 
   .preview :global(th) {
-    background: #2d2d2d;
+    background: var(--bg-tertiary);
   }
 
   .preview :global(img) {

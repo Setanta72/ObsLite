@@ -2483,6 +2483,7 @@ dependencies = [
  "tauri-plugin-fs",
  "tauri-plugin-opener",
  "walkdir",
+ "webkit2gtk",
 ]
 
 [[package]]

@@ -1,4 +1,4 @@
-import { writable, derived } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 
 export interface NoteFile {
   name: string;
@@ -42,6 +42,75 @@ export const showSearch = writable<boolean>(false);
 export const showTagsPane = writable<boolean>(true);
 export const showBacklinksPane = writable<boolean>(true);
 export const activePane = writable<'files' | 'tags' | 'search'>('files');
+
+// Theme state
+export const theme = writable<'light' | 'dark'>(
+  (typeof localStorage !== 'undefined' && localStorage.getItem('obslite-theme') as 'light' | 'dark') || 'dark'
+);
+
+// Persist theme changes
+if (typeof localStorage !== 'undefined') {
+  theme.subscribe(value => localStorage.setItem('obslite-theme', value));
+}
+
+// Navigation history
+export const noteHistory = writable<NoteFile[]>([]);
+export const historyIndex = writable<number>(-1);
+
+export function pushToHistory(note: NoteFile) {
+  const history = get(noteHistory);
+  const index = get(historyIndex);
+
+  // Remove forward history if we're not at the end
+  const newHistory = history.slice(0, index + 1);
+
+  // Don't add if it's the same as current
+  if (newHistory.length > 0 && newHistory[newHistory.length - 1].relative_path === note.relative_path) {
+    return;
+  }
+
+  newHistory.push(note);
+
+  // Limit history size
+  if (newHistory.length > 50) {
+    newHistory.shift();
+  }
+
+  noteHistory.set(newHistory);
+  historyIndex.set(newHistory.length - 1);
+}
+
+export function canGoBack(): boolean {
+  return get(historyIndex) > 0;
+}
+
+export function canGoForward(): boolean {
+  const history = get(noteHistory);
+  const index = get(historyIndex);
+  return index < history.length - 1;
+}
+
+export function goBack(): NoteFile | null {
+  const history = get(noteHistory);
+  const index = get(historyIndex);
+
+  if (index > 0) {
+    historyIndex.set(index - 1);
+    return history[index - 1];
+  }
+  return null;
+}
+
+export function goForward(): NoteFile | null {
+  const history = get(noteHistory);
+  const index = get(historyIndex);
+
+  if (index < history.length - 1) {
+    historyIndex.set(index + 1);
+    return history[index + 1];
+  }
+  return null;
+}
 
 // Derived stores
 export const sortedNotes = derived(notes, ($notes) => {

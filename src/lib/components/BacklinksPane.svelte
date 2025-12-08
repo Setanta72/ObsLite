@@ -6,6 +6,7 @@
 
   const dispatch = createEventDispatcher<{
     noteClick: NoteFile;
+    linkClick: string;
   }>();
 </script>
 
@@ -38,10 +39,13 @@
     </div>
     <div class="outgoing-list">
       {#each linkInfo.outgoing_links as link}
-        <div class="outgoing-item">
+        <button
+          class="outgoing-item"
+          on:click={() => dispatch('linkClick', link)}
+        >
           <span class="link-icon">🔗</span>
           <span class="link-name">{link}</span>
-        </div>
+        </button>
       {/each}
     </div>
   {/if}
@@ -49,7 +53,7 @@
 
 <style>
   .backlinks-pane {
-    border-top: 1px solid #3c3c3c;
+    border-top: 1px solid var(--border-color);
     max-height: 300px;
     overflow-y: auto;
   }
@@ -59,13 +63,13 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.5rem 0.75rem;
-    background: #2d2d2d;
+    background: var(--bg-tertiary);
     position: sticky;
     top: 0;
   }
 
   .pane-header.outgoing {
-    border-top: 1px solid #3c3c3c;
+    border-top: 1px solid var(--border-color);
   }
 
   .pane-header h3 {
@@ -73,13 +77,13 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #808080;
+    color: var(--text-muted);
   }
 
   .count {
     font-size: 0.75rem;
-    color: #808080;
-    background: #3c3c3c;
+    color: var(--text-muted);
+    background: var(--border-color);
     padding: 0.1rem 0.4rem;
     border-radius: 10px;
   }
@@ -96,7 +100,7 @@
     padding: 0.35rem 0.75rem;
     background: transparent;
     border: none;
-    color: #569cd6;
+    color: var(--link-color);
     cursor: pointer;
     text-align: left;
     gap: 0.5rem;
@@ -104,16 +108,25 @@
   }
 
   .backlink-item:hover {
-    background: #2a2d2e;
+    background: var(--bg-tertiary);
   }
 
   .outgoing-item {
     display: flex;
     align-items: center;
+    width: 100%;
     padding: 0.35rem 0.75rem;
+    background: transparent;
+    border: none;
+    color: var(--link-color);
+    cursor: pointer;
+    text-align: left;
     gap: 0.5rem;
     font-size: 0.85rem;
-    color: #9cdcfe;
+  }
+
+  .outgoing-item:hover {
+    background: var(--bg-tertiary);
   }
 
   .note-icon,
@@ -131,7 +144,7 @@
 
   .empty-message {
     padding: 0.75rem;
-    color: #808080;
+    color: var(--text-muted);
     font-size: 0.85rem;
     text-align: center;
   }

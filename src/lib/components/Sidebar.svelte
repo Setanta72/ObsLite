@@ -63,8 +63,8 @@
 <style>
   .sidebar {
     width: 240px;
-    background: #252526;
-    border-right: 1px solid #3c3c3c;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -75,7 +75,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid #3c3c3c;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .sidebar-header h2 {
@@ -83,7 +83,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #cccccc;
+    color: var(--text-primary);
   }
 
   .header-buttons {
@@ -94,7 +94,7 @@
   .icon-btn {
     background: transparent;
     border: none;
-    color: #cccccc;
+    color: var(--text-primary);
     cursor: pointer;
     padding: 0.25rem 0.5rem;
     border-radius: 3px;
@@ -102,31 +102,31 @@
   }
 
   .icon-btn:hover {
-    background: #3c3c3c;
+    background: var(--border-color);
   }
 
   .search-box {
     padding: 0.5rem;
-    border-bottom: 1px solid #3c3c3c;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .search-box input {
     width: 100%;
     padding: 0.4rem 0.6rem;
-    background: #3c3c3c;
-    border: 1px solid #3c3c3c;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
-    color: #cccccc;
+    color: var(--text-primary);
     font-size: 0.85rem;
   }
 
   .search-box input:focus {
     outline: none;
-    border-color: #569cd6;
+    border-color: var(--accent-color);
   }
 
   .search-box input::placeholder {
-    color: #808080;
+    color: var(--text-muted);
   }
 
   .notes-list {
@@ -142,7 +142,7 @@
     padding: 0.5rem 1rem;
     background: transparent;
     border: none;
-    color: #cccccc;
+    color: var(--text-primary);
     cursor: pointer;
     text-align: left;
     gap: 0.5rem;
@@ -150,11 +150,12 @@
   }
 
   .note-item:hover {
-    background: #2a2d2e;
+    background: var(--bg-tertiary);
   }
 
   .note-item.active {
-    background: #37373d;
+    background: var(--bg-tertiary);
+    border-left: 2px solid var(--accent-color);
   }
 
   .note-icon {
@@ -170,7 +171,7 @@
 
   .empty-message {
     padding: 1rem;
-    color: #808080;
+    color: var(--text-muted);
     font-size: 0.85rem;
     text-align: center;
   }
