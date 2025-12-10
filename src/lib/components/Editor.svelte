@@ -179,6 +179,24 @@
     });
   }
 
+  // Insert text at cursor position
+  export function insertText(text: string) {
+    if (!view) return;
+
+    const selection = view.state.selection.main;
+    view.dispatch({
+      changes: {
+        from: selection.from,
+        to: selection.to,
+        insert: text,
+      },
+      selection: {
+        anchor: selection.from + text.length,
+      },
+    });
+    view.focus();
+  }
+
   // Format insertion functions
   export function insertFormat(type: string) {
     if (!view) return;

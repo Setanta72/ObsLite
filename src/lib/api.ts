@@ -56,3 +56,20 @@ export async function getAllNoteNames(): Promise<string[]> {
 export async function noteExists(name: string): Promise<boolean> {
   return invoke('note_exists', { name });
 }
+
+// Image handling functions
+export async function copyImageToVault(sourcePath: string): Promise<string> {
+  return invoke('copy_image_to_vault', { sourcePath });
+}
+
+export async function readImageBase64(relativePath: string): Promise<string> {
+  return invoke('read_image_base64', { relativePath });
+}
+
+export async function getImageAbsolutePath(relativePath: string): Promise<string> {
+  return invoke('get_image_absolute_path', { relativePath });
+}
+
+export async function openImageExternal(relativePath: string): Promise<void> {
+  return invoke('open_image_external', { relativePath });
+}

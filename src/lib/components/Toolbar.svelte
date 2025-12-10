@@ -1,13 +1,16 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { open } from '@tauri-apps/plugin-dialog';
   import { currentNote, isEditing, isDirty } from '$lib/stores/app';
   import { spellcheckEnabled } from '$lib/spellcheck';
+  import { copyImageToVault } from '$lib/api';
 
   const dispatch = createEventDispatcher<{
     save: void;
     delete: void;
     toggleEdit: void;
     format: { type: string };
+    insertImage: { relativePath: string };
   }>();
 
   function insertFormat(type: string) {
@@ -16,6 +19,25 @@
 
   function toggleSpellcheck() {
     $spellcheckEnabled = !$spellcheckEnabled;
+  }
+
+  async function insertImage() {
+    try {
+      const selected = await open({
+        multiple: false,
+        filters: [{
+          name: 'Images',
+          extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg']
+        }]
+      });
+
+      if (selected) {
+        const relativePath = await copyImageToVault(selected as string);
+        dispatch('insertImage', { relativePath });
+      }
+    } catch (error) {
+      console.error('Failed to insert image:', error);
+    }
   }
 </script>
 
@@ -50,6 +72,8 @@
       <button class="format-btn" on:click={() => insertFormat('link')} title="Wiki Link">[[]]</button>
       <button class="format-btn" on:click={() => insertFormat('code')} title="Code">`</button>
       <button class="format-btn" on:click={() => insertFormat('codeblock')} title="Code Block">```</button>
+      <span class="separator"></span>
+      <button class="format-btn image-btn" on:click={insertImage} title="Insert Image">IMG</button>
     {/if}
   </div>
 

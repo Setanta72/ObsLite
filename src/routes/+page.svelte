@@ -204,6 +204,15 @@
     }
   }
 
+  function handleInsertImage(relativePath: string) {
+    // Insert markdown image syntax at cursor position
+    const imageMarkdown = `![](${relativePath})`;
+    if (editorComponent) {
+      editorComponent.insertText(imageMarkdown);
+    }
+    $isDirty = true;
+  }
+
   // Auto-save on interval
   let saveInterval: ReturnType<typeof setInterval>;
   onMount(() => {
@@ -302,6 +311,7 @@
             on:delete={deleteCurrentNote}
             on:toggleEdit={() => $isEditing = !$isEditing}
             on:format={(e) => editorComponent?.insertFormat(e.detail.type)}
+            on:insertImage={(e) => handleInsertImage(e.detail.relativePath)}
           />
 
           {#if $isEditing}

@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { marked } from 'marked';
   import { openUrl } from '@tauri-apps/plugin-opener';
+  import { readImageBase64, openImageExternal } from '$lib/api';
 
   export let content: string;
 
@@ -11,6 +12,10 @@
 
   // Custom renderer to handle wiki-links
   const renderer = new marked.Renderer();
+
+  // Image cache to avoid reloading
+  let imageCache: Map<string, string> = new Map();
+  let processedHtml = '';
 
   // Process wiki-links before passing to marked
   function processWikiLinks(text: string): string {
@@ -38,11 +43,79 @@
     );
   }
 
+  // Process local images to use base64
+  async function processImages(html: string): Promise<string> {
+    // Find all img tags with local paths (not http/https)
+    const imgRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g;
+    let match;
+    const replacements: { original: string; replacement: string }[] = [];
+
+    while ((match = imgRegex.exec(html)) !== null) {
+      const fullTag = match[0];
+      const src = match[1];
+
+      // Skip external URLs
+      if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) {
+        continue;
+      }
+
+      // Check cache first
+      if (imageCache.has(src)) {
+        const cachedData = imageCache.get(src)!;
+        const newTag = fullTag.replace(src, cachedData).replace('<img', '<img class="local-image" data-path="' + src + '"');
+        replacements.push({ original: fullTag, replacement: newTag });
+        continue;
+      }
+
+      // Load image via Rust backend
+      try {
+        const base64Data = await readImageBase64(src);
+        imageCache.set(src, base64Data);
+        const newTag = fullTag.replace(src, base64Data).replace('<img', '<img class="local-image" data-path="' + src + '"');
+        replacements.push({ original: fullTag, replacement: newTag });
+      } catch (err) {
+        console.error('Failed to load image:', src, err);
+        // Keep original tag but mark as error
+        const errorTag = `<div class="image-error">Image not found: ${src}</div>`;
+        replacements.push({ original: fullTag, replacement: errorTag });
+      }
+    }
+
+    // Apply replacements
+    let result = html;
+    for (const { original, replacement } of replacements) {
+      result = result.replace(original, replacement);
+    }
+
+    return result;
+  }
+
   $: processedContent = processTags(processWikiLinks(content));
   $: htmlContent = marked(processedContent, { renderer, breaks: true });
 
+  // Process images when HTML changes
+  $: {
+    processImages(htmlContent as string).then(result => {
+      processedHtml = result;
+    });
+  }
+
   async function handleClick(e: MouseEvent) {
     const target = e.target as HTMLElement;
+
+    // Handle local image clicks - open with system default (xdg-open)
+    if (target.tagName === 'IMG' && target.classList.contains('local-image')) {
+      e.preventDefault();
+      const relativePath = target.dataset.path;
+      if (relativePath) {
+        try {
+          await openImageExternal(relativePath);
+        } catch (err) {
+          console.error('Failed to open image:', err);
+        }
+      }
+      return;
+    }
 
     // Handle wiki-links
     if (target.classList.contains('wiki-link')) {
@@ -85,7 +158,7 @@
 </script>
 
 <div class="preview" on:click={handleClick}>
-  {@html htmlContent}
+  {@html processedHtml}
 </div>
 
 <style>
@@ -231,8 +304,33 @@
   }
 
   .preview :global(img) {
-    max-width: 100%;
+    max-width: 90%;
+    max-height: 400px;
     height: auto;
+    display: block;
+    margin: 1rem auto;
     border-radius: 4px;
+    object-fit: contain;
+  }
+
+  .preview :global(img.local-image) {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .preview :global(img.local-image:hover) {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .preview :global(.image-error) {
+    padding: 1rem;
+    margin: 1rem auto;
+    max-width: 90%;
+    background: var(--danger-bg);
+    color: var(--danger-color);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 0.9rem;
   }
 </style>
