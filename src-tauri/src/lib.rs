@@ -247,6 +247,12 @@ fn open_image_external(relative_path: String) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn export_html(path: String, content: String) -> Result<(), String> {
+    fs::write(&path, content).map_err(|e| format!("Failed to export HTML: {}", e))?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -271,7 +277,8 @@ pub fn run() {
             copy_image_to_vault,
             read_image_base64,
             get_image_absolute_path,
-            open_image_external
+            open_image_external,
+            export_html
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

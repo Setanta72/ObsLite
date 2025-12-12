@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { open } from '@tauri-apps/plugin-dialog';
+  import { open, save } from '@tauri-apps/plugin-dialog';
+  import { marked } from 'marked';
   import * as api from '$lib/api';
   import {
     vaultPath,
@@ -33,6 +34,10 @@
   let loading = true;
   let error = '';
   let editorComponent: Editor;
+
+  // Modal state for new note
+  let showNewNoteModal = false;
+  let newNoteName = '';
 
   // Reactive check for navigation buttons
   $: canNavigateBack = $historyIndex > 0;
@@ -147,18 +152,29 @@
     }
   }
 
+  function openNewNoteModal() {
+    newNoteName = '';
+    showNewNoteModal = true;
+  }
+
   async function createNewNote() {
-    const name = prompt('Enter note name:');
-    if (!name) return;
+    if (!newNoteName.trim()) return;
 
     try {
-      const newNote = await api.createNote(name);
+      const newNote = await api.createNote(newNoteName.trim());
       $notes = await api.listNotes();
       $allNoteNames = await api.getAllNoteNames();
+      showNewNoteModal = false;
+      newNoteName = '';
       await openNote(newNote);
     } catch (e) {
       error = `Failed to create note: ${e}`;
     }
+  }
+
+  function cancelNewNote() {
+    showNewNoteModal = false;
+    newNoteName = '';
   }
 
   async function deleteCurrentNote() {
@@ -213,6 +229,70 @@
     $isDirty = true;
   }
 
+  // Generate HTML document for export
+  function generateExportHtml(content: string, title: string): string {
+    const htmlContent = marked(content);
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.6;
+      color: #333;
+    }
+    h1, h2, h3, h4, h5, h6 { margin-top: 1.5rem; margin-bottom: 0.75rem; }
+    h1 { font-size: 2rem; border-bottom: 1px solid #ddd; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; }
+    p { margin-bottom: 1rem; }
+    a { color: #0066cc; }
+    code { background: #f5f5f5; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: monospace; }
+    pre { background: #f5f5f5; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+    pre code { background: none; padding: 0; }
+    blockquote { border-left: 3px solid #0066cc; padding-left: 1rem; margin-left: 0; color: #666; font-style: italic; }
+    img { max-width: 100%; height: auto; border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+    th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; }
+    th { background: #f5f5f5; }
+    ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+    @media print {
+      body { max-width: 100%; padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  ${htmlContent}
+</body>
+</html>`;
+  }
+
+  async function handleExportHtml() {
+    if (!$currentNote) return;
+
+    try {
+      const path = await save({
+        defaultPath: `${$currentNote.name}.html`,
+        filters: [{
+          name: 'HTML',
+          extensions: ['html']
+        }]
+      });
+
+      if (path) {
+        const htmlDoc = generateExportHtml($currentContent, $currentNote.name);
+        await api.exportHtml(path, htmlDoc);
+      }
+    } catch (e) {
+      error = `Failed to export: ${e}`;
+    }
+  }
+
   // Auto-save on interval
   let saveInterval: ReturnType<typeof setInterval>;
   onMount(() => {
@@ -233,7 +313,7 @@
     }
     if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
       e.preventDefault();
-      createNewNote();
+      openNewNoteModal();
     }
     if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
       e.preventDefault();
@@ -272,7 +352,7 @@
       {notes}
       {currentNote}
       on:select={(e) => openNote(e.detail)}
-      on:newNote={createNewNote}
+      on:newNote={openNewNoteModal}
       on:changeVault={selectVault}
     />
 
@@ -312,6 +392,7 @@
             on:toggleEdit={() => $isEditing = !$isEditing}
             on:format={(e) => editorComponent?.insertFormat(e.detail.type)}
             on:insertImage={(e) => handleInsertImage(e.detail.relativePath)}
+            on:exportHtml={handleExportHtml}
           />
 
           {#if $isEditing}
@@ -368,6 +449,28 @@
 {#if error}
   <div class="error-toast" on:click={() => error = ''}>
     {error}
+  </div>
+{/if}
+
+{#if showNewNoteModal}
+  <div class="modal-overlay" on:click={cancelNewNote} role="dialog" aria-modal="true">
+    <div class="modal" on:click|stopPropagation role="document">
+      <h3>Create New Note</h3>
+      <input
+        type="text"
+        placeholder="Note name..."
+        bind:value={newNoteName}
+        on:keydown={(e) => {
+          if (e.key === 'Enter') createNewNote();
+          if (e.key === 'Escape') cancelNewNote();
+        }}
+        autofocus
+      />
+      <div class="modal-buttons">
+        <button class="cancel-btn" on:click={cancelNewNote}>Cancel</button>
+        <button class="create-btn" on:click={createNewNote}>Create</button>
+      </div>
+    </div>
   </div>
 {/if}
 
@@ -595,5 +698,82 @@
     border-radius: 4px;
     cursor: pointer;
     max-width: 300px;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    min-width: 300px;
+    max-width: 400px;
+  }
+
+  .modal h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+  }
+
+  .modal input {
+    width: 100%;
+    padding: 0.6rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+  }
+
+  .modal input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+  }
+
+  .modal-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  .modal-buttons button {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+
+  .cancel-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .cancel-btn:hover {
+    background: var(--border-color);
+  }
+
+  .create-btn {
+    background: var(--accent-color);
+    border: none;
+    color: white;
+  }
+
+  .create-btn:hover {
+    background: var(--accent-hover);
   }
 </style>

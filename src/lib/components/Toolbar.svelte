@@ -11,6 +11,7 @@
     toggleEdit: void;
     format: { type: string };
     insertImage: { relativePath: string };
+    exportHtml: void;
   }>();
 
   function insertFormat(type: string) {
@@ -93,6 +94,9 @@
       title="Toggle Edit/Preview (Ctrl+E)"
     >
       {$isEditing ? '👁 Preview' : '✏ Edit'}
+    </button>
+    <button class="action-btn export" on:click={() => dispatch('exportHtml')} title="Export as HTML">
+      Export
     </button>
     <button class="action-btn save" on:click={() => dispatch('save')} title="Save (Ctrl+S)">
       Save
@@ -199,6 +203,17 @@
 
   .action-btn.save:hover {
     background: var(--accent-hover);
+  }
+
+  .action-btn.export {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+  }
+
+  .action-btn.export:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--accent-color);
   }
 
   .action-btn.delete {

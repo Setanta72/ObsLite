@@ -73,3 +73,7 @@ export async function getImageAbsolutePath(relativePath: string): Promise<string
 export async function openImageExternal(relativePath: string): Promise<void> {
   return invoke('open_image_external', { relativePath });
 }
+
+export async function exportHtml(path: string, content: string): Promise<void> {
+  return invoke('export_html', { path, content });
+}
